@@ -1,0 +1,22 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: panaderia-mysql
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: panaderia_db
+      MYSQL_USER: panaderia_user
+      MYSQL_PASSWORD: panaderia123
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
