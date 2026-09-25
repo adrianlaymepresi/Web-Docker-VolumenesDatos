@@ -1,0 +1,43 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: panaderia-db
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: panaderia_db
+      MYSQL_USER: panaderia_user
+      MYSQL_PASSWORD: panaderia123
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot123"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build: .
+    container_name: panaderia-web
+    restart: unless-stopped
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      DATABASE_URL: "mysql://panaderia_user:panaderia123@db:3306/panaderia_db"
+      SESSION_SECRET: "103ea420765135e1630171b9ba041fa8d91d2125efdf9e46bbb7148022a8395f"
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

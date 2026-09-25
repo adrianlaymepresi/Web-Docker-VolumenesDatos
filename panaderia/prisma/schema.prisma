@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Role {
+  ADMINISTRADOR
+  AYUDANTE
+
+  @@map("usuarios_rol")
+}
+
+model User {
+  id       Int     @id @default(autoincrement()) @map("id_usuario") @db.UnsignedInt
+  username String  @unique(map: "usuario") @map("usuario") @db.VarChar(100)
+  password String  @map("contrasena") @db.VarChar(255)
+  role     Role    @map("rol")
+  isActive Boolean @default(true) @map("activo")
+
+  @@map("usuarios")
+}
+
+model Category {
+  id          Int       @id @default(autoincrement()) @map("id_categoria") @db.UnsignedInt
+  name        String    @unique(map: "nombre_categoria") @map("nombre_categoria") @db.VarChar(100)
+  description String?   @map("descripcion") @db.VarChar(255)
+  products    Product[]
+
+  @@map("categorias")
+}
+
+model Product {
+  id         Int            @id @default(autoincrement()) @map("id_producto") @db.UnsignedInt
+  name       String         @map("nombre_producto") @db.VarChar(150)
+  price      Decimal        @map("precio_producto") @db.Decimal(10, 2)
+  categoryId Int            @map("id_categoria") @db.UnsignedInt
+  category   Category       @relation(fields: [categoryId], references: [id], map: "fk_producto_categoria")
+  images     ProductImage[]
+
+  @@index([categoryId], map: "fk_producto_categoria")
+  @@map("productos")
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement()) @map("id_imagen") @db.UnsignedInt
+  priority  Int     @default(0) @map("prioridad_imagen") @db.UnsignedInt
+  url       String  @map("url_imagen") @db.VarChar(2048)
+  productId Int     @map("id_producto") @db.UnsignedInt
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade, map: "fk_imagen_producto")
+
+  @@index([productId], map: "fk_imagen_producto")
+  @@map("imagenes")
+}
